@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOLO FITNESS — By Suraj | Hyderabad's Elite Training Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+  :root {
+    --black: #060606;
+    --dark: #0f0f0f;
+    --panel: #161616;
+    --border: #222;
+    --mid: #333;
+    --silver: #888;
+    --light: #ccc;
+    --white: #f5f5f5;
+    --gold: #c9a85c;
+    --gold2: #e8c97a;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor { position: fixed; width: 10px; height: 10px; background: var(--gold); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .2s, height .2s, background .2s; mix-blend-mode: difference; }
+  .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid var(--gold); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .3s, height .3s, border-color .3s; }
+  body:hover .cursor { opacity:1; }
+
+  /* LOADER */
+  #loader {
+    position: fixed; inset: 0; background: var(--black); z-index: 10000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .loader-logo { font-family: var(--font-display); font-size: clamp(60px, 12vw, 130px); color: var(--white); letter-spacing: 0.2em; line-height: 1; }
+  .loader-sub { font-family: var(--font-mono); font-size: 11px; color: var(--gold); letter-spacing: 0.4em; margin-top: 12px; }
+  .loader-bar { width: 200px; height: 1px; background: var(--mid); margin-top: 40px; overflow: hidden; }
+  .loader-fill { height: 100%; width: 0%; background: var(--gold); transition: width 2s ease; }
+  .loader-pct { font-family: var(--font-mono); font-size: 10px; color: var(--silver); margin-top: 10px; letter-spacing: 0.3em; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 500;
+    padding: 24px 48px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid transparent;
+    transition: border-color .4s, background .4s, padding .4s;
+  }
+  nav.scrolled { background: rgba(6,6,6,.96); border-color: var(--border); padding: 16px 48px; }
+  .nav-logo { font-family: var(--font-display); font-size: 28px; letter-spacing: .12em; color: var(--white); }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; color: var(--silver); text-decoration: none; transition: color .3s; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; padding: 10px 22px; border: 1px solid var(--gold); color: var(--gold); cursor: none; background: transparent; transition: background .3s, color .3s; }
+  .nav-cta:hover { background: var(--gold); color: var(--black); }
+
+  /* HERO */
+  #hero { position: relative; width: 100vw; height: 100vh; overflow: hidden; display: flex; align-items: flex-end; justify-content: flex-start; padding: 80px 60px; }
+  #hero-canvas { position: absolute; inset: 0; z-index: 0; }
+  .hero-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(6,6,6,.9) 0%, rgba(6,6,6,.3) 60%, transparent 100%); z-index: 1; }
+  .hero-content { position: relative; z-index: 2; max-width: 750px; }
+  .hero-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: .4em; color: var(--gold); text-transform: uppercase; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+  .hero-tag::before { content: ''; width: 40px; height: 1px; background: var(--gold); }
+  .hero-h1 { font-family: var(--font-display); font-size: clamp(72px, 10vw, 140px); line-height: 0.92; color: var(--white); letter-spacing: .04em; }
+  .hero-h1 .gold { color: var(--gold); }
+  .hero-desc { font-family: var(--font-body); font-size: 18px; line-height: 1.7; color: var(--light); margin-top: 24px; max-width: 480px; font-style: italic; }
+  .hero-actions { margin-top: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-gold { font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; padding: 16px 36px; background: var(--gold); color: var(--black); border: none; cursor: none; transition: background .3s, transform .2s; }
+  .btn-gold:hover { background: var(--gold2); transform: translateY(-2px); }
+  .btn-outline { font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; padding: 16px 36px; border: 1px solid var(--white); color: var(--white); cursor: none; background: transparent; transition: border-color .3s, color .3s, transform .2s; }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
+  .hero-stats { position: absolute; right: 60px; bottom: 80px; z-index: 2; display: flex; flex-direction: column; gap: 28px; }
+  .stat-item { text-align: right; }
+  .stat-num { font-family: var(--font-display); font-size: 42px; color: var(--gold); }
+  .stat-lbl { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; color: var(--silver); text-transform: uppercase; }
+  .hero-scroll { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .scroll-line { width: 1px; height: 60px; background: linear-gradient(to bottom, var(--gold), transparent); animation: scrollPulse 2s ease-in-out infinite; }
+  @keyframes scrollPulse { 0%,100%{opacity:.3;transform:scaleY(1)} 50%{opacity:1;transform:scaleY(1.2)} }
+  .scroll-txt { font-family: var(--font-mono); font-size: 8px; letter-spacing: .3em; color: var(--silver); }
+
+  /* MARQUEE */
+  .marquee-strip { background: var(--gold); padding: 14px 0; overflow: hidden; }
+  .marquee-inner { display: flex; gap: 48px; animation: marquee 18s linear infinite; white-space: nowrap; width: max-content; }
+  .marquee-item { font-family: var(--font-display); font-size: 16px; letter-spacing: .2em; color: var(--black); }
+  .marquee-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--black); display: inline-block; vertical-align: middle; }
+  @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* SECTIONS */
+  section { padding: 120px 60px; }
+  .section-tag { font-family: var(--font-mono); font-size: 9px; letter-spacing: .45em; color: var(--gold); text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .section-tag::before { content:''; width:28px; height:1px; background:var(--gold); }
+  .section-title { font-family: var(--font-display); font-size: clamp(44px, 5vw, 80px); line-height: 1; letter-spacing: .04em; }
+  .section-title .gold { color: var(--gold); }
+
+  /* ABOUT */
+  #about { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .about-visual { position: relative; aspect-ratio: 4/5; background: var(--panel); overflow: hidden; }
+  .about-visual-inner { position: absolute; inset: 0; }
+  #about-canvas { width: 100%; height: 100%; }
+  .about-badge { position: absolute; bottom: -1px; right: -1px; background: var(--gold); padding: 20px 28px; }
+  .about-badge-num { font-family: var(--font-display); font-size: 52px; color: var(--black); line-height: 1; }
+  .about-badge-lbl { font-family: var(--font-mono); font-size: 8px; letter-spacing: .3em; color: var(--black); }
+  .about-text { display: flex; flex-direction: column; gap: 24px; }
+  .about-body { font-size: 18px; line-height: 1.9; color: var(--light); }
+  .about-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .about-list li { font-family: var(--font-mono); font-size: 11px; letter-spacing: .15em; color: var(--silver); padding-left: 20px; position: relative; }
+  .about-list li::before { content:'▸'; position:absolute; left:0; color:var(--gold); }
+  .about-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .about-info-item { background: var(--panel); border: 1px solid var(--border); padding: 16px; }
+  .about-info-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: .3em; color: var(--gold); margin-bottom: 6px; }
+  .about-info-val { font-family: var(--font-body); font-size: 14px; color: var(--light); }
+
+  /* SERVICES */
+  #services { background: var(--dark); }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 64px; }
+  .service-card { background: var(--panel); border: 1px solid var(--border); padding: 40px 32px; position: relative; overflow: hidden; transition: transform .3s, border-color .3s; cursor: none; }
+  .service-card::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:2px; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease; }
+  .service-card:hover::after { transform:scaleX(1); }
+  .service-card:hover { transform: translateY(-4px); border-color: var(--mid); }
+  .service-icon { font-size: 36px; margin-bottom: 24px; }
+  .service-name { font-family: var(--font-display); font-size: 28px; letter-spacing: .06em; margin-bottom: 12px; }
+  .service-desc { font-size: 15px; line-height: 1.7; color: var(--silver); }
+  .service-num { position: absolute; top: 20px; right: 24px; font-family: var(--font-display); font-size: 64px; color: rgba(201,168,92,.07); line-height: 1; }
+
+  /* MEMBERSHIP */
+  #membership { background: var(--black); }
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 64px; }
+  .plan-card { background: var(--panel); border: 1px solid var(--border); padding: 44px 32px; position: relative; overflow: hidden; transition: transform .3s; cursor: none; }
+  .plan-card.featured { border-color: var(--gold); background: var(--dark); }
+  .plan-card.featured::before { content:'MOST POPULAR'; position:absolute; top:0; right:0; background:var(--gold); color:var(--black); font-family:var(--font-mono); font-size:8px; letter-spacing:.25em; padding:8px 16px; }
+  .plan-name { font-family: var(--font-display); font-size: 32px; letter-spacing: .08em; margin-bottom: 6px; }
+  .plan-price { margin: 28px 0; }
+  .plan-price-main { font-family: var(--font-display); font-size: 62px; color: var(--gold); line-height: 1; }
+  .plan-price-period { font-family: var(--font-mono); font-size: 10px; color: var(--silver); letter-spacing: .2em; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 12px; margin: 28px 0 36px; }
+  .plan-features li { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: var(--light); display: flex; align-items: center; gap: 10px; }
+  .plan-features li::before { content:'✓'; color:var(--gold); font-size:12px; }
+  .plan-features li.no { color: var(--mid); }
+  .plan-features li.no::before { content:'✕'; color:var(--mid); }
+  .btn-plan { width: 100%; padding: 14px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .25em; text-transform: uppercase; border: 1px solid var(--gold); color: var(--gold); background: transparent; cursor: none; transition: all .3s; }
+  .btn-plan:hover, .plan-card.featured .btn-plan { background: var(--gold); color: var(--black); }
+
+  /* BOOKING MODAL */
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.8); backdrop-filter: blur(8px); z-index: 800; display: none; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--dark); border: 1px solid var(--gold); width: 520px; max-width: 95vw; padding: 48px; position: relative; }
+  .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; color: var(--silver); font-size: 22px; cursor: none; }
+  .modal-close:hover { color: var(--gold); }
+  .modal-title { font-family: var(--font-display); font-size: 36px; margin-bottom: 8px; }
+  .modal-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; color: var(--gold); margin-bottom: 32px; }
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; color: var(--silver); display: block; margin-bottom: 8px; }
+  .form-input { width: 100%; background: var(--panel); border: 1px solid var(--border); color: var(--white); font-family: var(--font-body); font-size: 16px; padding: 12px 16px; outline: none; transition: border-color .3s; }
+  .form-input:focus { border-color: var(--gold); }
+  .form-input option { background: var(--panel); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .submit-btn { width: 100%; padding: 16px; background: var(--gold); border: none; color: var(--black); font-family: var(--font-display); font-size: 20px; letter-spacing: .1em; cursor: none; transition: background .3s, transform .2s; margin-top: 8px; }
+  .submit-btn:hover { background: var(--gold2); transform: translateY(-2px); }
+  .form-success { display: none; text-align: center; padding: 20px; }
+  .form-success-icon { font-size: 40px; margin-bottom: 12px; }
+  .form-success h3 { font-family: var(--font-display); font-size: 28px; margin-bottom: 8px; }
+  .form-success p { font-family: var(--font-mono); font-size: 10px; letter-spacing: .15em; color: var(--gold); }
+
+  /* AI TRAINER */
+  #ai-trainer { background: var(--dark); }
+  .trainer-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: start; margin-top: 60px; }
+  .trainer-chat-wrap { background: var(--black); border: 1px solid var(--border); }
+  .trainer-chat-header { padding: 18px 24px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .trainer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 16px; color: var(--black); }
+  .trainer-name { font-family: var(--font-display); font-size: 18px; letter-spacing: .05em; }
+  .trainer-status { font-family: var(--font-mono); font-size: 9px; color: #4ade80; letter-spacing: .2em; display: flex; align-items: center; gap: 6px; }
+  .trainer-status::before { content:''; width:6px; height:6px; border-radius:50%; background:#4ade80; animation:pulse-green 2s infinite; }
+  @keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .trainer-chat-messages { height: 480px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; scrollbar-width: thin; scrollbar-color: var(--mid) transparent; }
+  .chat-msg { max-width: 80%; }
+  .chat-msg.ai { align-self: flex-start; }
+  .chat-msg.user { align-self: flex-end; }
+  .chat-bubble { padding: 12px 16px; font-size: 14px; line-height: 1.6; font-family: var(--font-body); }
+  .chat-msg.ai .chat-bubble { background: var(--panel); border: 1px solid var(--border); border-radius: 0 12px 12px 12px; color: var(--light); }
+  .chat-msg.user .chat-bubble { background: var(--gold); color: var(--black); border-radius: 12px 0 12px 12px; }
+  .chat-sender { font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; color: var(--silver); margin-bottom: 4px; }
+  .chat-msg.user .chat-sender { text-align: right; }
+  .trainer-input-area { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; gap: 10px; }
+  .trainer-input { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--white); font-family: var(--font-body); font-size: 14px; padding: 10px 14px; outline: none; }
+  .trainer-input::placeholder { color: var(--mid); }
+  .trainer-send { background: var(--gold); border: none; color: var(--black); padding: 10px 18px; font-family: var(--font-display); font-size: 14px; cursor: none; transition: background .2s; }
+  .trainer-send:hover { background: var(--gold2); }
+  .quick-prompts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .quick-btn { font-family: var(--font-mono); font-size: 8px; letter-spacing: .15em; padding: 7px 12px; border: 1px solid var(--border); color: var(--silver); background: transparent; cursor: none; transition: border-color .2s, color .2s; }
+  .quick-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .trainer-info { display: flex; flex-direction: column; gap: 24px; }
+  .trainer-feature { background: var(--panel); border: 1px solid var(--border); padding: 24px; border-left: 2px solid var(--gold); }
+  .trainer-feature-icon { font-size: 24px; margin-bottom: 10px; }
+  .trainer-feature-name { font-family: var(--font-display); font-size: 20px; margin-bottom: 6px; }
+  .trainer-feature-desc { font-size: 13px; line-height: 1.6; color: var(--silver); font-family: var(--font-mono); }
+  .typing { display: flex; align-items: center; gap: 4px; padding: 12px 16px; background: var(--panel); border: 1px solid var(--border); width: fit-content; border-radius: 0 12px 12px 12px; }
+  .typing span { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: typing-dot .8s ease-in-out infinite; }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes typing-dot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
+  /* REMINDERS */
+  #reminders { background: var(--black); }
+  .reminder-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 60px; align-items: start; margin-top: 60px; }
+  .reminder-panel { background: var(--panel); border: 1px solid var(--border); }
+  .reminder-panel-header { padding: 18px 24px; background: var(--dark); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .reminder-panel-title { font-family: var(--font-display); font-size: 18px; letter-spacing: .06em; }
+  .reminder-badge { background: var(--gold); color: var(--black); font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; padding: 4px 10px; }
+  .reminder-list { display: flex; flex-direction: column; }
+  .reminder-item { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; transition: background .2s; }
+  .reminder-item:hover { background: var(--dark); }
+  .reminder-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--mid); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 14px; flex-shrink: 0; }
+  .reminder-avatar.urgent { background: rgba(239,68,68,.2); border: 1px solid #ef4444; }
+  .reminder-avatar.warning { background: rgba(201,168,92,.15); border: 1px solid var(--gold); }
+  .reminder-info { flex: 1; }
+  .reminder-name { font-family: var(--font-body); font-size: 15px; font-weight: 600; }
+  .reminder-plan { font-family: var(--font-mono); font-size: 8px; letter-spacing: .2em; color: var(--silver); margin-top: 3px; }
+  .reminder-days { font-family: var(--font-display); font-size: 16px; text-align: right; }
+  .reminder-days.urgent { color: #ef4444; }
+  .reminder-days.warning { color: var(--gold); }
+  .reminder-days-lbl { font-family: var(--font-mono); font-size: 7px; letter-spacing: .2em; color: var(--silver); text-align: right; }
+  .reminder-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .remind-btn { font-family: var(--font-mono); font-size: 7px; letter-spacing: .15em; padding: 4px 8px; border: 1px solid var(--border); color: var(--silver); background: transparent; cursor: none; transition: all .2s; }
+  .remind-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .remind-btn.sms { border-color: var(--gold); color: var(--gold); }
+  .add-member-form { background: var(--panel); border: 1px solid var(--border); padding: 32px; }
+  .add-member-title { font-family: var(--font-display); font-size: 24px; margin-bottom: 24px; }
+  .reminder-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-top: 20px; }
+  .r-stat { background: var(--dark); border: 1px solid var(--border); padding: 16px; text-align: center; }
+  .r-stat-num { font-family: var(--font-display); font-size: 32px; color: var(--gold); }
+  .r-stat-lbl { font-family: var(--font-mono); font-size: 7px; letter-spacing: .2em; color: var(--silver); margin-top: 4px; }
+  .notification-toast { position: fixed; bottom: 30px; right: 30px; z-index: 700; display: flex; flex-direction: column; gap: 10px; max-width: 340px; }
+  .toast { background: var(--panel); border: 1px solid var(--gold); padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start; animation: slideIn .3s ease; }
+  @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+  .toast-icon { font-size: 18px; flex-shrink: 0; }
+  .toast-body { flex: 1; }
+  .toast-title { font-family: var(--font-display); font-size: 14px; }
+  .toast-msg { font-family: var(--font-mono); font-size: 9px; color: var(--silver); letter-spacing: .1em; margin-top: 3px; }
+
+  /* REVIEWS */
+  #reviews { background: var(--dark); }
+  .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
+  .review-card { background: var(--black); border: 1px solid var(--border); padding: 32px; transition: transform .3s, border-color .3s; cursor: none; }
+  .review-card:hover { transform: translateY(-6px); border-color: var(--gold); }
+  .review-stars { color: var(--gold); letter-spacing: 3px; margin-bottom: 16px; font-size: 13px; }
+  .review-text { font-size: 15px; line-height: 1.8; color: var(--light); font-style: italic; margin-bottom: 20px; }
+  .review-author { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; color: var(--gold); }
+  .review-overall { display: flex; align-items: center; gap: 32px; margin-top: 48px; padding: 32px; background: var(--panel); border: 1px solid var(--border); }
+  .rating-big { font-family: var(--font-display); font-size: 80px; color: var(--gold); line-height: 1; }
+  .rating-details { flex: 1; }
+  .rating-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .rating-bar { flex: 1; height: 3px; background: var(--border); }
+  .rating-fill { height: 100%; background: var(--gold); }
+  .rating-num { font-family: var(--font-mono); font-size: 9px; color: var(--silver); width: 20px; }
+
+  /* CONTACT */
+  #contact { background: var(--black); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; }
+  .contact-info { display: flex; flex-direction: column; gap: 28px; }
+  .contact-item { display: flex; gap: 20px; align-items: flex-start; }
+  .contact-icon { width: 44px; height: 44px; background: var(--panel); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .contact-detail-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: .3em; color: var(--gold); margin-bottom: 6px; }
+  .contact-detail-val { font-size: 16px; color: var(--light); }
+  .call-cta { background: var(--gold); padding: 24px 28px; display: flex; align-items: center; gap: 16px; cursor: none; transition: background .3s; }
+  .call-cta:hover { background: var(--gold2); }
+  .call-cta-icon { font-size: 28px; }
+  .call-cta-text h3 { font-family: var(--font-display); font-size: 24px; color: var(--black); }
+  .call-cta-text p { font-family: var(--font-mono); font-size: 9px; letter-spacing: .2em; color: var(--black); }
+  .map-embed { width: 100%; height: 300px; background: var(--panel); border: 1px solid var(--border); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .map-placeholder { text-align: center; }
+  .map-placeholder p { font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; color: var(--silver); margin-top: 8px; }
+  .map-pin { font-size: 36px; animation: pinBounce 2s ease-in-out infinite; }
+  @keyframes pinBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  /* FOOTER */
+  footer { background: var(--dark); border-top: 1px solid var(--border); padding: 48px 60px 32px; }
+  .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px; }
+  .footer-logo { font-family: var(--font-display); font-size: 36px; letter-spacing: .12em; margin-bottom: 16px; }
+  .footer-logo span { color: var(--gold); }
+  .footer-tagline { font-size: 15px; line-height: 1.7; color: var(--silver); max-width: 300px; font-style: italic; }
+  .footer-col-title { font-family: var(--font-mono); font-size: 9px; letter-spacing: .3em; color: var(--gold); margin-bottom: 20px; }
+  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: .15em; color: var(--silver); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--gold); }
+  .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-copy { font-family: var(--font-mono); font-size: 9px; letter-spacing: .2em; color: var(--mid); }
+  .footer-credits { font-family: var(--font-mono); font-size: 9px; letter-spacing: .15em; color: var(--mid); }
+  .footer-credits span { color: var(--gold); }
+
+  /* CHATBOT BUBBLE */
+  .chat-bubble-btn { position: fixed; bottom: 30px; left: 30px; z-index: 700; width: 60px; height: 60px; border-radius: 50%; background: var(--gold); border: none; cursor: none; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform .3s, box-shadow .3s; box-shadow: 0 0 0 0 rgba(201,168,92,.4); animation: ring-pulse 2s ease-in-out infinite; }
+  @keyframes ring-pulse { 0%{box-shadow:0 0 0 0 rgba(201,168,92,.4)} 70%{box-shadow:0 0 0 14px rgba(201,168,92,0)} 100%{box-shadow:0 0 0 0 rgba(201,168,92,0)} }
+  .chat-bubble-btn:hover { transform: scale(1.1); }
+  .chatbot-panel { position: fixed; bottom: 100px; left: 30px; z-index: 700; width: 360px; background: var(--dark); border: 1px solid var(--gold); display: none; flex-direction: column; max-height: 520px; }
+  .chatbot-panel.open { display: flex; animation: slideUp .3s ease; }
+  @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .chatbot-header { background: var(--panel); padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .chatbot-header-left { display: flex; align-items: center; gap: 10px; }
+  .chatbot-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .chatbot-title { font-family: var(--font-display); font-size: 16px; }
+  .chatbot-subtitle { font-family: var(--font-mono); font-size: 7px; letter-spacing: .2em; color: var(--gold); }
+  .chatbot-close { background: none; border: none; color: var(--silver); cursor: none; font-size: 18px; }
+  .chatbot-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: var(--mid) transparent; }
+  .chatbot-input-row { border-top: 1px solid var(--border); padding: 10px 12px; display: flex; gap: 8px; }
+  .chatbot-input { flex: 1; background: var(--panel); border: 1px solid var(--border); color: var(--white); font-family: var(--font-body); font-size: 13px; padding: 8px 12px; outline: none; }
+  .chatbot-send { background: var(--gold); border: none; color: var(--black); padding: 8px 14px; cursor: none; font-size: 14px; }
+
+  /* SCROLL REVEAL — bidirectional (down & up) */
+  .reveal {
+    opacity: 0; transform: translateY(48px) scale(0.97);
+    transition: opacity .72s cubic-bezier(.25,.8,.25,1), transform .72s cubic-bezier(.25,.8,.25,1);
+    will-change: opacity, transform;
+  }
+  .reveal.visible      { opacity: 1; transform: translateY(0) scale(1); }
+  .reveal.exit-up      { opacity: 0; transform: translateY(-36px) scale(0.97); transition: opacity .5s ease, transform .5s ease; }
+  .reveal.exit-down    { opacity: 0; transform: translateY(48px) scale(0.97); }
+
+  .reveal-left {
+    opacity: 0; transform: translateX(-60px);
+    transition: opacity .72s cubic-bezier(.25,.8,.25,1), transform .72s cubic-bezier(.25,.8,.25,1);
+    will-change: opacity, transform;
+  }
+  .reveal-left.visible   { opacity: 1; transform: translateX(0); }
+  .reveal-left.exit-up   { opacity: 0; transform: translateX(-30px); transition: opacity .5s ease, transform .5s ease; }
+  .reveal-left.exit-down { opacity: 0; transform: translateX(-60px); }
+
+  .reveal-right {
+    opacity: 0; transform: translateX(60px);
+    transition: opacity .72s cubic-bezier(.25,.8,.25,1), transform .72s cubic-bezier(.25,.8,.25,1);
+    will-change: opacity, transform;
+  }
+  .reveal-right.visible   { opacity: 1; transform: translateX(0); }
+  .reveal-right.exit-up   { opacity: 0; transform: translateX(30px); transition: opacity .5s ease, transform .5s ease; }
+  .reveal-right.exit-down { opacity: 0; transform: translateX(60px); }
+
+  /* 2D PARALLAX SMOOTH — driven by rAF lerp, no CSS transition needed */
+  .section-tag, .section-title, .service-card, .review-card, .plan-card,
+  .about-visual, .about-text, .trainer-chat-wrap, .trainer-info,
+  .reminder-panel, .add-member-form, .marquee-strip,
+  .hero-overlay, .hero-content, .hero-stats,
+  .contact-info, #contact .reveal-right, .about-info-item {
+    will-change: transform;
+  }
+  /* Don't override hover transforms on service/review cards with parallax */
+  .service-card:hover { transform: translateY(-4px) !important; }
+  .review-card:hover { transform: translateY(-6px) !important; }
+
+  /* Bigger trainer chat for long AI responses */
+  .trainer-chat-messages { height: 480px; }
+  .chat-bubble pre { overflow-x: auto; }
+  .chat-msg.ai .chat-bubble { font-size: 14px; line-height: 1.7; }
+
+  /* Chatbot panel taller for detailed answers */
+  .chatbot-panel { max-height: 700px; width: 420px; }
+  .chatbot-messages { max-height: 520px; }
+  .chatbot-messages .chat-bubble { font-size: 13px; line-height: 1.65; }
+
+  /* Quick prompt wrap in trainer */
+  .quick-prompts { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 16px 4px; }
+  .quick-btn { font-family: var(--font-mono); font-size: 8px; letter-spacing: .1em; padding: 7px 11px; border: 1px solid var(--border); color: var(--silver); background: transparent; cursor: none; transition: border-color .2s, color .2s, background .2s; text-align: left; }
+  .quick-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,92,.05); }
+
+  /* SPINNER */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,.3); border-top: 2px solid var(--black); border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* RESPONSIVE */
+  @media(max-width:900px) {
+    nav { padding: 18px 24px; } nav.scrolled { padding: 12px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    #about, .trainer-layout, .reminder-layout, .contact-grid { grid-template-columns: 1fr; }
+    .services-grid, .plans-grid, .reviews-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .hero-stats { display: none; }
+    .hero-content { padding-right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo" id="loaderLogo">YOLO</div>
+  <div class="loader-sub">FITNESS BY SURAJ · EST. HYDERABAD</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+  <div class="loader-pct" id="loaderPct">0%</div>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">YOLO <span>FITNESS</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#membership">Membership</a></li>
+    <li><a href="#ai-trainer">AI Trainer</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-cta" onclick="openModal('basic')">Join Now</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Hyderabad's Elite Gym</div>
+    <h1 class="hero-h1">PUSH<br>YOUR<br><span class="gold">LIMITS</span></h1>
+    <p class="hero-desc">Premium fitness experience on the 5th Floor of PM House, Abids. Where champions are built, one rep at a time.</p>
+    <div class="hero-actions">
+      <button class="btn-gold" onclick="openModal('basic')">Book Membership</button>
+      <button class="btn-outline" onclick="document.getElementById('ai-trainer').scrollIntoView({behavior:'smooth'})">Talk to AI Trainer</button>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item"><div class="stat-num">4.9</div><div class="stat-lbl">Google Rating</div></div>
+    <div class="stat-item"><div class="stat-num">466</div><div class="stat-lbl">Reviews</div></div>
+    <div class="stat-item"><div class="stat-num">5th</div><div class="stat-lbl">Floor, PM House</div></div>
+  </div>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <div class="scroll-txt">SCROLL</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip">
+  <div class="marquee-inner" id="marqueeInner">
+    <span class="marquee-item">STRENGTH TRAINING</span><span class="marquee-dot"></span>
+    <span class="marquee-item">CARDIO</span><span class="marquee-dot"></span>
+    <span class="marquee-item">PERSONAL TRAINING</span><span class="marquee-dot"></span>
+    <span class="marquee-item">YOLO FITNESS</span><span class="marquee-dot"></span>
+    <span class="marquee-item">HYDERABAD</span><span class="marquee-dot"></span>
+    <span class="marquee-item">4.9 ★ RATED</span><span class="marquee-dot"></span>
+    <span class="marquee-item">ELITE COACHES</span><span class="marquee-dot"></span>
+    <span class="marquee-item">STRENGTH TRAINING</span><span class="marquee-dot"></span>
+    <span class="marquee-item">CARDIO</span><span class="marquee-dot"></span>
+    <span class="marquee-item">PERSONAL TRAINING</span><span class="marquee-dot"></span>
+    <span class="marquee-item">YOLO FITNESS</span><span class="marquee-dot"></span>
+    <span class="marquee-item">HYDERABAD</span><span class="marquee-dot"></span>
+    <span class="marquee-item">4.9 ★ RATED</span><span class="marquee-dot"></span>
+    <span class="marquee-item">ELITE COACHES</span><span class="marquee-dot"></span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-visual reveal-left">
+    <div class="about-visual-inner"><canvas id="about-canvas"></canvas></div>
+    <div class="about-badge">
+      <div class="about-badge-num">4.9</div>
+      <div class="about-badge-lbl">★ RATED GYM</div>
+    </div>
+  </div>
+  <div class="about-text reveal-right">
+    <div class="section-tag">Our Story</div>
+    <h2 class="section-title">ABOUT<br><span class="gold">YOLO</span></h2>
+    <p class="about-body">Nestled on the 5th floor of PM House in the heart of Abids, Hyderabad — Yolo Fitness by Suraj is more than a gym. It's a sanctuary of strength, discipline, and transformation. With dedicated trainers and standard equipment, we craft champions every single day.</p>
+    <ul class="about-list">
+      <li>Trained & certified coaches on every floor</li>
+      <li>All standard strength & cardio equipment</li>
+      <li>Good ambience with focused training zones</li>
+      <li>Open 5:30 AM to support early risers</li>
+    </ul>
+    <div class="about-info-grid">
+      <div class="about-info-item"><div class="about-info-label">Address</div><div class="about-info-val">5th Floor, PM House, Chirag Ali Ln, Abids</div></div>
+      <div class="about-info-item"><div class="about-info-label">Hours</div><div class="about-info-val">Mon–Sat 5:30 AM – 10:00 PM</div></div>
+      <div class="about-info-item"><div class="about-info-label">Phone</div><div class="about-info-val">098480 81347</div></div>
+      <div class="about-info-item"><div class="about-info-label">Rating</div><div class="about-info-val">4.9 ★ (466 Reviews)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-tag reveal">Our Programs</div>
+  <h2 class="section-title reveal">ELITE <span class="gold">SERVICES</span></h2>
+  <div class="services-grid" style="margin-top:64px">
+    <div class="service-card reveal"><div class="service-num">01</div><div class="service-icon">🏋️</div><div class="service-name">Strength Training</div><p class="service-desc">Build raw power and muscle mass with our progressive overload programs designed by certified strength coaches.</p></div>
+    <div class="service-card reveal" style="transition-delay:.1s"><div class="service-num">02</div><div class="service-icon">🔥</div><div class="service-name">HIIT Cardio</div><p class="service-desc">High-intensity interval training that burns maximum calories and boosts your metabolism in minimum time.</p></div>
+    <div class="service-card reveal" style="transition-delay:.2s"><div class="service-num">03</div><div class="service-icon">🥊</div><div class="service-name">Personal Training</div><p class="service-desc">One-on-one sessions with dedicated trainers who craft personalized plans tailored to your unique goals.</p></div>
+    <div class="service-card reveal" style="transition-delay:.3s"><div class="service-num">04</div><div class="service-icon">🧘</div><div class="service-name">Flexibility & Yoga</div><p class="service-desc">Restore balance, improve posture, and prevent injury with guided flexibility and mindfulness sessions.</p></div>
+    <div class="service-card reveal" style="transition-delay:.4s"><div class="service-num">05</div><div class="service-icon">🥗</div><div class="service-name">Nutrition Coaching</div><p class="service-desc">Fuel your performance with personalized diet plans and macro tracking support from our expert nutritionists.</p></div>
+    <div class="service-card reveal" style="transition-delay:.5s"><div class="service-num">06</div><div class="service-icon">🤖</div><div class="service-name">AI Fitness Agent</div><p class="service-desc">24/7 AI-powered trainer that answers your questions, tracks your progress, and keeps you accountable.</p></div>
+  </div>
+</section>
+
+<!-- MEMBERSHIP -->
+<section id="membership">
+  <div class="section-tag reveal">Plans & Pricing</div>
+  <h2 class="section-title reveal">MEMBERSHIP <span class="gold">PLANS</span></h2>
+  <div class="plans-grid">
+    <div class="plan-card reveal">
+      <div class="plan-name">STARTER</div>
+      <div class="plan-price"><div class="plan-price-main">₹999</div><div class="plan-price-period">/ MONTH</div></div>
+      <ul class="plan-features">
+        <li>Gym Access (6 AM – 8 PM)</li>
+        <li>All Standard Equipment</li>
+        <li>Locker Room</li>
+        <li>AI Fitness Chatbot</li>
+        <li class="no">Personal Trainer</li>
+        <li class="no">Nutrition Plan</li>
+        <li class="no">Priority Booking</li>
+      </ul>
+      <button class="btn-plan" onclick="openModal('starter')">Enroll Now</button>
+    </div>
+    <div class="plan-card featured reveal" style="transition-delay:.1s">
+      <div class="plan-name">ELITE</div>
+      <div class="plan-price"><div class="plan-price-main">₹1,999</div><div class="plan-price-period">/ MONTH</div></div>
+      <ul class="plan-features">
+        <li>24/7 Gym Access</li>
+        <li>All Standard Equipment</li>
+        <li>Locker + Shower</li>
+        <li>AI Fitness Chatbot</li>
+        <li>Personal Trainer (4x/month)</li>
+        <li>Basic Nutrition Plan</li>
+        <li class="no">Priority Booking</li>
+      </ul>
+      <button class="btn-plan" onclick="openModal('elite')">Enroll Now</button>
+    </div>
+    <div class="plan-card reveal" style="transition-delay:.2s">
+      <div class="plan-name">CHAMPION</div>
+      <div class="plan-price"><div class="plan-price-main">₹3,499</div><div class="plan-price-period">/ MONTH</div></div>
+      <ul class="plan-features">
+        <li>24/7 Unlimited Access</li>
+        <li>All Premium Equipment</li>
+        <li>VIP Locker + Towel Service</li>
+        <li>AI Fitness Chatbot</li>
+        <li>Personal Trainer (Unlimited)</li>
+        <li>Full Nutrition Coaching</li>
+        <li>Priority Booking</li>
+      </ul>
+      <button class="btn-plan" onclick="openModal('champion')">Enroll Now</button>
+    </div>
+  </div>
+</section>
+
+<!-- AI TRAINER -->
+<section id="ai-trainer">
+  <div class="section-tag reveal">Powered by AI</div>
+  <h2 class="section-title reveal">YOUR AI <span class="gold">TRAINER</span></h2>
+  <p class="reveal" style="font-size:17px;color:var(--silver);max-width:540px;line-height:1.7;margin-top:12px;font-style:italic">Ask anything about fitness, nutrition, workout plans, or supplement advice — your AI trainer is available 24/7.</p>
+  <div class="trainer-layout">
+    <div class="trainer-chat-wrap reveal-left">
+      <div class="trainer-chat-header">
+        <div class="trainer-avatar">S</div>
+        <div>
+          <div class="trainer-name">SURAJ AI — Fitness Expert</div>
+          <div class="trainer-status">Active Now</div>
+        </div>
+      </div>
+      <div class="trainer-chat-messages" id="trainerMessages">
+        <div class="chat-msg ai">
+          <div class="chat-sender">SURAJ AI</div>
+          <div class="chat-bubble">Namaste! 💪 I'm your AI Fitness Trainer from Yolo Fitness. Ask me anything — workout plans, diet tips, exercise form, or supplement advice. Let's crush your goals!</div>
+        </div>
+      </div>
+      <div class="quick-prompts" style="padding:0 16px">
+        <button class="quick-btn" onclick="sendTrainerMsg('Give me a complete 30-day Indian diet plan to lose 5 to 7 kg weight. Include every meal — breakfast, lunch, dinner, snacks — with calories and macros. Make it practical for someone in Hyderabad.')">🥗 30-Day Diet Plan (Lose 5-7 kg)</button>
+        <button class="quick-btn" onclick="sendTrainerMsg('Teach me how to do a perfect squat step by step. Include starting position, foot placement, breathing, depth, what muscles are worked, common mistakes, beginner tips, and 3 squat variations.')">🏋️ How to Do Squats (Full Tutorial)</button>
+        <button class="quick-btn" onclick="sendTrainerMsg('Give me a complete 6-day gym split workout plan for building muscle. Include sets, reps, rest time, and progressive overload tips.')">💪 6-Day Muscle Split</button>
+        <button class="quick-btn" onclick="sendTrainerMsg('I am a beginner starting gym for the first time. Give me a complete 8-week beginner gym program with workout days, exercises, sets, reps, warm up, and cool down.')">🔰 Beginner 8-Week Program</button>
+        <button class="quick-btn" onclick="sendTrainerMsg('Give me a full high protein Indian vegetarian meal plan for muscle gain. Include morning to night schedule with grams of protein per meal.')">🫘 High-Protein Veg Diet</button>
+        <button class="quick-btn" onclick="sendTrainerMsg('Teach me the correct deadlift form step by step, muscles worked, breathing technique, common mistakes, and how much weight to start with as a beginner.')">⚡ Perfect Deadlift Form</button>
+      </div>
+      <div class="trainer-input-area">
+        <input class="trainer-input" id="trainerInput" type="text" placeholder="Ask your AI trainer anything..." onkeydown="if(event.key==='Enter')sendTrainerMsg()">
+        <button class="trainer-send" onclick="sendTrainerMsg()">ASK</button>
+      </div>
+    </div>
+    <div class="trainer-info reveal-right">
+      <div class="trainer-feature"><div class="trainer-feature-icon">🎯</div><div class="trainer-feature-name">Personalized Plans</div><div class="trainer-feature-desc">Get custom workout splits based on your fitness level, goals, and available time.</div></div>
+      <div class="trainer-feature"><div class="trainer-feature-icon">🍽️</div><div class="trainer-feature-name">Nutrition Intelligence</div><div class="trainer-feature-desc">Ask for Indian meal plans, macro breakdowns, and supplement stacks tailored to your body.</div></div>
+      <div class="trainer-feature"><div class="trainer-feature-icon">📊</div><div class="trainer-feature-name">Progress Tracking</div><div class="trainer-feature-desc">Describe your progress and get real-time adjustments to optimize your training.</div></div>
+      <div class="trainer-feature"><div class="trainer-feature-icon">⚡</div><div class="trainer-feature-name">24/7 Availability</div><div class="trainer-feature-desc">Your AI trainer never sleeps. Get expert advice any time of day or night.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REMINDERS -->
+<section id="reminders">
+  <div class="section-tag reveal">Smart System</div>
+  <h2 class="section-title reveal">MEMBERSHIP <span class="gold">MANAGER</span></h2>
+  <p class="reveal" style="font-size:17px;color:var(--silver);max-width:560px;line-height:1.7;margin-top:12px;font-style:italic">Automated reminders notify both clients and Suraj 3 days before any membership expires — so no one misses a renewal.</p>
+  <div class="reminder-layout">
+    <div>
+      <div class="reminder-panel reveal">
+        <div class="reminder-panel-header">
+          <div class="reminder-panel-title">⏰ EXPIRY ALERTS</div>
+          <div class="reminder-badge">LIVE SYSTEM</div>
+        </div>
+        <div class="reminder-list" id="reminderList">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      <div class="reminder-stats reveal">
+        <div class="r-stat"><div class="r-stat-num" id="totalMembers">0</div><div class="r-stat-lbl">Total Members</div></div>
+        <div class="r-stat"><div class="r-stat-num" id="expiringCount">0</div><div class="r-stat-lbl">Expiring Soon</div></div>
+        <div class="r-stat"><div class="r-stat-num" id="activeCount">0</div><div class="r-stat-lbl">Active Members</div></div>
+      </div>
+    </div>
+    <div class="add-member-form reveal-right">
+      <div class="add-member-title">ADD NEW MEMBER</div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="addName" type="text" placeholder="Member's full name"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="addPhone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+        <div class="form-group"><label class="form-label">Plan</label>
+          <select class="form-input" id="addPlan">
+            <option value="Starter">Starter — ₹999</option>
+            <option value="Elite">Elite — ₹1,999</option>
+            <option value="Champion">Champion — ₹3,499</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Membership Start Date</label><input class="form-input" id="addStart" type="date"></div>
+      <div class="form-group"><label class="form-label">Duration</label>
+        <select class="form-input" id="addDuration">
+          <option value="30">1 Month</option>
+          <option value="90">3 Months</option>
+          <option value="180">6 Months</option>
+          <option value="365">1 Year</option>
+        </select>
+      </div>
+      <button class="submit-btn" onclick="addMember()">ADD MEMBER & SET REMINDER</button>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="section-tag reveal">Client Testimonials</div>
+  <h2 class="section-title reveal">WHAT THEY <span class="gold">SAY</span></h2>
+  <div class="reviews-grid">
+    <div class="review-card reveal"><div class="review-stars">★★★★★</div><p class="review-text">"I work out at this place and I am very happy with the facility and services. The trainers are very dedicated and the equipment is top-notch."</p><div class="review-author">— PRIYA R. · ELITE MEMBER</div></div>
+    <div class="review-card reveal" style="transition-delay:.1s"><div class="review-stars">★★★★★</div><p class="review-text">"Good ambience, dedicated trainers and good staff. This place has all standard equipment with trained coaches. Absolutely love training here!"</p><div class="review-author">— RAHUL K. · CHAMPION MEMBER</div></div>
+    <div class="review-card reveal" style="transition-delay:.2s"><div class="review-stars">★★★★★</div><p class="review-text">"Best gym in Abids hands down. Suraj and the team are incredibly supportive. My fitness transformation happened right here. Highly recommended!"</p><div class="review-author">— ANJALI M. · STARTER MEMBER</div></div>
+    <div class="review-card reveal" style="transition-delay:.3s"><div class="review-stars">★★★★★</div><p class="review-text">"The 5:30 AM opening time is a game changer for early birds like me. Clean facility, great trainers, and a motivating atmosphere every single day."</p><div class="review-author">— SIDDHARTH V. · ELITE MEMBER</div></div>
+    <div class="review-card reveal" style="transition-delay:.4s"><div class="review-stars">★★★★★</div><p class="review-text">"I've been to many gyms in Hyderabad but Yolo Fitness by Suraj is in a different league. The personal attention from coaches is exceptional."</p><div class="review-author">— DEEPAK N. · CHAMPION MEMBER</div></div>
+    <div class="review-card reveal" style="transition-delay:.5s"><div class="review-stars">★★★★☆</div><p class="review-text">"Great value for money in Abids. Very professional staff and clean facility. The AI chatbot feature is a brilliant addition. Love this gym!"</p><div class="review-author">— MEENA S. · STARTER MEMBER</div></div>
+  </div>
+  <div class="review-overall reveal">
+    <div class="rating-big">4.9</div>
+    <div class="rating-details">
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.3em;color:var(--gold);margin-bottom:16px">BASED ON 466 GOOGLE REVIEWS</div>
+      <div class="rating-row"><span style="font-family:var(--font-mono);font-size:9px;color:var(--silver)">5</span><div class="rating-bar"><div class="rating-fill" style="width:91%"></div></div><span class="rating-num">91%</span></div>
+      <div class="rating-row"><span style="font-family:var(--font-mono);font-size:9px;color:var(--silver)">4</span><div class="rating-bar"><div class="rating-fill" style="width:6%"></div></div><span class="rating-num">6%</span></div>
+      <div class="rating-row"><span style="font-family:var(--font-mono);font-size:9px;color:var(--silver)">3</span><div class="rating-bar"><div class="rating-fill" style="width:2%"></div></div><span class="rating-num">2%</span></div>
+      <div class="rating-row"><span style="font-family:var(--font-mono);font-size:9px;color:var(--silver)">2</span><div class="rating-bar"><div class="rating-fill" style="width:1%"></div></div><span class="rating-num">1%</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-tag reveal">Get In Touch</div>
+  <h2 class="section-title reveal">CONTACT <span class="gold">US</span></h2>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <div class="contact-item reveal"><div class="contact-icon">📍</div><div><div class="contact-detail-label">Address</div><div class="contact-detail-val">5th Floor, PM House, Road, Chirag Ali Ln, Mahesh Nagar, Abids, Hyderabad, Telangana 500001</div></div></div>
+      <div class="contact-item reveal"><div class="contact-icon">📞</div><div><div class="contact-detail-label">Phone</div><div class="contact-detail-val">098480 81347</div></div></div>
+      <div class="contact-item reveal"><div class="contact-icon">🕐</div><div><div class="contact-detail-label">Hours</div><div class="contact-detail-val">Mon – Sat: 5:30 AM – 10:00 PM<br>Sunday: 7:00 AM – 12:00 PM</div></div></div>
+      <div class="contact-item reveal"><div class="contact-icon">⭐</div><div><div class="contact-detail-label">Rating</div><div class="contact-detail-val">4.9/5 on Google Maps (466 reviews)</div></div></div>
+      <div class="call-cta reveal" onclick="window.location='tel:+919848081347'">
+        <div class="call-cta-icon">📲</div>
+        <div class="call-cta-text"><h3>CALL SURAJ NOW</h3><p>+91 98480 81347 · INSTANT RESPONSE</p></div>
+      </div>
+    </div>
+    <div class="reveal-right">
+      <div class="map-embed">
+        <div class="map-placeholder">
+          <div class="map-pin">📍</div>
+          <p>YOLO FITNESS BY SURAJ</p>
+          <p style="margin-top:4px">5th Floor PM House, Abids, Hyderabad</p>
+          <button class="btn-gold" style="margin-top:16px;font-size:9px;padding:10px 20px" onclick="window.open('https://maps.google.com/?q=Yolo+Fitness+By+Suraj+Hyderabad','_blank')">OPEN IN GOOGLE MAPS</button>
+        </div>
+      </div>
+      <div style="margin-top:24px;background:var(--panel);border:1px solid var(--border);padding:28px">
+        <div style="font-family:var(--font-display);font-size:22px;margin-bottom:20px">SEND A MESSAGE</div>
+        <div class="form-group"><label class="form-label">Your Name</label><input class="form-input" id="contactName" type="text" placeholder="Your full name"></div>
+        <div class="form-group"><label class="form-label">Your Phone</label><input class="form-input" id="contactPhone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-input" id="contactMsg" rows="3" placeholder="What would you like to know?"></textarea></div>
+        <button class="submit-btn" style="margin-top:0" onclick="sendMessage()">SEND MESSAGE</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo">YOLO <span>FITNESS</span></div>
+      <p class="footer-tagline">Elite fitness training in the heart of Abids, Hyderabad. Dedicated coaches, premium equipment, extraordinary results.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Quick Links</div>
+      <ul class="footer-links">
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#membership">Membership</a></li>
+        <li><a href="#ai-trainer">AI Trainer</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Programs</div>
+      <ul class="footer-links">
+        <li><a href="#">Strength Training</a></li>
+        <li><a href="#">HIIT Cardio</a></li>
+        <li><a href="#">Personal Training</a></li>
+        <li><a href="#">Yoga & Flexibility</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Contact</div>
+      <ul class="footer-links">
+        <li><a href="tel:+919848081347">📞 098480 81347</a></li>
+        <li><a href="#">📍 Abids, Hyderabad</a></li>
+        <li><a href="#">⏰ 5:30 AM – 10 PM</a></li>
+        <li><a href="#">⭐ 4.9 Google Rating</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2025 YOLO FITNESS BY SURAJ · ALL RIGHTS RESERVED</div>
+    <div class="footer-credits">DESIGNED WITH ♥ FOR <span>SURAJ & TEAM</span></div>
+  </div>
+</footer>
+
+<!-- BOOKING MODAL -->
+<div class="modal-bg" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalForm">
+      <div class="modal-title">JOIN YOLO FITNESS</div>
+      <div class="modal-sub" id="modalPlanLabel">MEMBERSHIP ENROLLMENT</div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="bName" type="text" placeholder="Your full name"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="bPhone" type="tel" placeholder="+91 XXXXX XXXXX"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="bEmail" type="email" placeholder="your@email.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Plan</label>
+          <select class="form-input" id="bPlan">
+            <option value="starter">Starter — ₹999/mo</option>
+            <option value="elite">Elite — ₹1,999/mo</option>
+            <option value="champion">Champion — ₹3,499/mo</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Duration</label>
+          <select class="form-input" id="bDuration">
+            <option value="30">1 Month</option>
+            <option value="90">3 Months</option>
+            <option value="180">6 Months</option>
+            <option value="365">1 Year</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Start Date</label><input class="form-input" id="bStart" type="date"></div>
+      <button class="submit-btn" onclick="submitBooking()">CONFIRM MEMBERSHIP</button>
+    </div>
+    <div class="form-success" id="modalSuccess">
+      <div class="form-success-icon">🏆</div>
+      <h3>WELCOME TO YOLO FITNESS!</h3>
+      <p>YOUR MEMBERSHIP IS CONFIRMED · SURAJ WILL CALL YOU SHORTLY</p>
+      <div style="margin-top:20px;font-family:var(--font-mono);font-size:10px;color:var(--silver)">Reminder will be set 3 days before expiry</div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chat-bubble-btn" onclick="toggleChatbot()" title="Chat with us">💬</button>
+<div class="chatbot-panel" id="chatbotPanel">
+  <div class="chatbot-header">
+    <div class="chatbot-header-left">
+      <div class="chatbot-avatar">🤖</div>
+      <div>
+        <div class="chatbot-title">YOLO AI ASSISTANT</div>
+        <div class="chatbot-subtitle">ALWAYS ONLINE · INSTANT REPLY</div>
+      </div>
+    </div>
+    <button class="chatbot-close" onclick="toggleChatbot()">✕</button>
+  </div>
+  <div class="chatbot-messages" id="chatbotMessages">
+    <div class="chat-msg ai">
+      <div class="chat-sender">YOLO AI</div>
+      <div class="chat-bubble">Hi! 👋 Welcome to Yolo Fitness by Suraj! Ask me ANYTHING — workouts, diet plans, exercise tutorials, membership info, or fitness tips. I answer every question in full detail!</div>
+    </div>
+  </div>
+  <div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px">
+    <button class="quick-btn" style="font-size:7px;padding:5px 8px" onclick="chatbotQuick('30-day diet plan to lose 5-7 kg weight')">🥗 Lose 5-7kg Diet</button>
+    <button class="quick-btn" style="font-size:7px;padding:5px 8px" onclick="chatbotQuick('How to do squats correctly step by step')">🏋️ Squat Tutorial</button>
+    <button class="quick-btn" style="font-size:7px;padding:5px 8px" onclick="chatbotQuick('Membership plans and pricing at Yolo Fitness')">💎 Membership Info</button>
+    <button class="quick-btn" style="font-size:7px;padding:5px 8px" onclick="chatbotQuick('Best supplements for muscle gain and weight loss in India')">💊 Supplements Guide</button>
+  </div>
+  <div class="chatbot-input-row">
+    <input class="chatbot-input" id="chatbotInput" type="text" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChatbotMsg()">
+    <button class="chatbot-send" onclick="sendChatbotMsg()">➤</button>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="notification-toast" id="toastContainer"></div>
+
+<script>
+// ====== CURSOR ======
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+setInterval(()=>{rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';},10);
+
+// ====== LOADER ======
+window.addEventListener('load',()=>{
+  const fill = document.getElementById('loaderFill');
+  const pct = document.getElementById('loaderPct');
+  const logo = document.getElementById('loaderLogo');
+  let p=0;
+  const iv = setInterval(()=>{
+    p+=Math.random()*3;
+    if(p>=100){p=100;clearInterval(iv);
+      setTimeout(()=>{
+        document.getElementById('loader').style.opacity='0';
+        document.getElementById('loader').style.transition='opacity .8s';
+        setTimeout(()=>document.getElementById('loader').style.display='none',800);
+        triggerHeroAnim();
+        scheduleReminderNotifications();
+      },400);
+    }
+    fill.style.width=p+'%';
+    pct.textContent=Math.round(p)+'%';
+  },30);
+  setTimeout(()=>fill.style.width='100%',2000);
+});
+
+function triggerHeroAnim(){
+  const h1 = document.querySelector('.hero-h1');
+  const desc = document.querySelector('.hero-desc');
+  const actions = document.querySelector('.hero-actions');
+  h1.style.opacity='0'; h1.style.transform='translateY(60px)';
+  desc.style.opacity='0'; desc.style.transform='translateY(40px)';
+  actions.style.opacity='0';
+  setTimeout(()=>{h1.style.transition='all 1s ease';h1.style.opacity='1';h1.style.transform='translateY(0)';},200);
+  setTimeout(()=>{desc.style.transition='all 1s ease';desc.style.opacity='1';desc.style.transform='translateY(0)';},500);
+  setTimeout(()=>{actions.style.transition='all 1s ease';actions.style.opacity='1';},800);
+}
+
+// ====== THREE.JS HERO ======
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, canvas.offsetWidth/canvas.offsetHeight, 0.1, 1000);
+  camera.position.z = 40;
+
+  function resize(){
+    const w=canvas.offsetWidth, h=canvas.offsetHeight;
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize); resize();
+
+  // Particles
+  const geo = new THREE.BufferGeometry();
+  const count = 2000;
+  const pos = new Float32Array(count*3);
+  for(let i=0;i<count*3;i++) pos[i]=(Math.random()-.5)*120;
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  const mat = new THREE.PointsMaterial({size:.4, color:0xc9a85c, transparent:true, opacity:.6});
+  const points = new THREE.Points(geo, mat);
+  scene.add(points);
+
+  // Rings
+  for(let i=0;i<3;i++){
+    const rg = new THREE.TorusGeometry(8+i*5, .05, 8, 80);
+    const rm = new THREE.MeshBasicMaterial({color:0xc9a85c, transparent:true, opacity:.15-i*.03});
+    const ring = new THREE.Mesh(rg,rm);
+    ring.rotation.x = Math.PI/4 + i*.3;
+    ring.userData = {speed: .003+i*.002};
+    scene.add(ring);
+  }
+
+  let mx2=0,my2=0;
+  document.addEventListener('mousemove',e=>{mx2=(e.clientX/window.innerWidth-.5)*2;my2=(e.clientY/window.innerHeight-.5)*2;});
+
+  function animate(){
+    requestAnimationFrame(animate);
+    points.rotation.y += .001;
+    points.rotation.x += .0005;
+    scene.children.filter(c=>c.isMesh).forEach(m=>{
+      m.rotation.y += m.userData.speed||0;
+      m.rotation.z += (m.userData.speed||0)*.5;
+    });
+    camera.position.x += (mx2*3 - camera.position.x)*.05;
+    camera.position.y += (-my2*3 - camera.position.y)*.05;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ====== ABOUT CANVAS (simple 3D) ======
+(function(){
+  const canvas = document.getElementById('about-canvas');
+  if(!canvas) return;
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+  camera.position.z = 5;
+
+  function resize(){
+    const w=canvas.offsetWidth||400, h=canvas.offsetHeight||500;
+    renderer.setSize(w,h,false);
+    camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize); setTimeout(resize,100);
+
+  const geo = new THREE.IcosahedronGeometry(1.5, 1);
+  const wireframe = new THREE.WireframeGeometry(geo);
+  const line = new THREE.LineSegments(wireframe, new THREE.LineBasicMaterial({color:0xc9a85c, transparent:true, opacity:.4}));
+  scene.add(line);
+
+  const pGeo = new THREE.BufferGeometry();
+  const pPos = new Float32Array(600);
+  for(let i=0;i<600;i++) pPos[i]=(Math.random()-.5)*12;
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPos,3));
+  scene.add(new THREE.Points(pGeo, new THREE.PointsMaterial({size:.15,color:0x888888,transparent:true,opacity:.4})));
+
+  function animate(){
+    requestAnimationFrame(animate);
+    line.rotation.y += .005;
+    line.rotation.x += .003;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+function chatbotQuick(msg){
+  document.getElementById('chatbotPanel').classList.add('open');
+  document.getElementById('chatbotInput').value = msg;
+  sendChatbotMsg();
+}
+
+// ====== ENHANCED 2D PARALLAX SCROLL — ALL DIRECTIONS, ALL SECTIONS ======
+// Uses rAF loop for buttery smooth 60fps in BOTH scroll directions
+let scrollY_cur = 0, scrollY_target = 0, scrollTicking = false;
+
+function lerp(a,b,t){ return a + (b-a)*t; }
+
+function parallaxLoop(){
+  scrollY_cur = lerp(scrollY_cur, scrollY_target, 0.09);
+  const sy = scrollY_cur;
+  const vh = window.innerHeight;
+
+  // ── Nav ──
+  document.getElementById('navbar').classList.toggle('scrolled', sy > 60);
+
+  // ── Hero layers — deep parallax ──
+  const heroOverlay = document.querySelector('.hero-overlay');
+  const heroContent = document.querySelector('.hero-content');
+  const heroStats   = document.querySelector('.hero-stats');
+  const heroScroll  = document.querySelector('.hero-scroll');
+  if(heroOverlay) heroOverlay.style.transform = `translateY(${sy * 0.28}px)`;
+  if(heroContent) heroContent.style.transform = `translateY(${sy * 0.5}px) translateX(${sy * -0.02}px)`;
+  if(heroStats)   heroStats.style.transform   = `translateY(${sy * 0.6}px) translateX(${sy * 0.01}px)`;
+  if(heroScroll)  heroScroll.style.opacity    = Math.max(0, 1 - sy/200);
+
+  // ── Marquee skew ──
+  const marquee = document.querySelector('.marquee-strip');
+  if(marquee){
+    const skew = ((sy % 400) - 200) / 200 * 0.8;
+    marquee.style.transform = `skewX(${skew}deg) translateY(${sy * 0.04}px)`;
+  }
+
+  // ── Helper: get parallax factor relative to viewport center ──
+  function relDist(el){
+    if(!el) return 0;
+    const r = el.getBoundingClientRect();
+    return ((r.top + r.height/2) - vh/2) / vh;
+  }
+
+  // ── Section tags — slide in from left as you approach, reverse on scroll up ──
+  document.querySelectorAll('.section-tag').forEach(el=>{
+    const d = relDist(el);
+    el.style.transform = `translateX(${d * -80}px) translateY(${d * 10}px)`;
+    el.style.opacity = Math.max(0, 1 - Math.abs(d) * 1.4);
+  });
+
+  // ── Section titles — counter-slide right ──
+  document.querySelectorAll('.section-title').forEach(el=>{
+    const d = relDist(el);
+    el.style.transform = `translateX(${d * 55}px)`;
+    el.style.opacity = Math.max(0.15, 1 - Math.abs(d) * 0.9);
+  });
+
+  // ── About — split axis parallax ──
+  const aboutVis = document.querySelector('.about-visual');
+  const aboutTxt = document.querySelector('.about-text');
+  if(aboutVis){ const d=relDist(aboutVis); aboutVis.style.transform=`translateY(${d*40}px) scale(${1+Math.abs(d)*0.04})`; }
+  if(aboutTxt){ const d=relDist(aboutTxt); aboutTxt.style.transform=`translateX(${d*-45}px)`; }
+
+  // ── Service cards — alternating horizontal drift ──
+  document.querySelectorAll('.service-card').forEach((el,i)=>{
+    const d = relDist(el);
+    const dir = (i%2===0)?1:-1;
+    if(!el.matches(':hover')) el.style.transform = `translateX(${d*dir*38}px) translateY(${d*12}px)`;
+  });
+
+  // ── Plan cards — staggered vertical float ──
+  document.querySelectorAll('.plan-card').forEach((el,i)=>{
+    const d = relDist(el);
+    const offset = [0, -8, 8][i%3];
+    if(!el.matches(':hover')) el.style.transform = `translateY(${d*28 + offset}px)`;
+  });
+
+  // ── Trainer layout — opposing drift ──
+  const tL = document.querySelector('.trainer-chat-wrap');
+  const tR = document.querySelector('.trainer-info');
+  if(tL && tR){ const d=relDist(tL); tL.style.transform=`translateX(${d*-32}px)`; tR.style.transform=`translateX(${d*32}px)`; }
+
+  // ── Reminder layout — opposing drift ──
+  const rL = document.querySelector('.reminder-panel');
+  const rR = document.querySelector('.add-member-form');
+  if(rL && rR){ const d=relDist(rL); rL.style.transform=`translateX(${d*-36}px)`; rR.style.transform=`translateX(${d*36}px)`; }
+
+  // ── Review cards — alternating horizontal ──
+  document.querySelectorAll('.review-card').forEach((el,i)=>{
+    const d = relDist(el);
+    const dir = (i%2===0)?1:-1;
+    if(!el.matches(':hover')) el.style.transform = `translateX(${d*dir*28}px) translateY(${d*8}px)`;
+  });
+
+  // ── Contact grid ──
+  const cL = document.querySelector('.contact-info');
+  const cR = document.querySelector('#contact .reveal-right');
+  if(cL){ const d=relDist(cL); cL.style.transform=`translateX(${d*-25}px)`; }
+  if(cR){ const d=relDist(cR); cR.style.transform=`translateX(${d*25}px)`; }
+
+  // ── About info items — stagger vertical ──
+  document.querySelectorAll('.about-info-item').forEach((el,i)=>{
+    const d = relDist(el);
+    el.style.transform = `translateY(${d*(14+i*5)}px)`;
+  });
+
+  // ── Reveal logic — bidirectional ──
+  document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>{
+    const r = el.getBoundingClientRect();
+    const inView = r.top < vh*0.88 && r.bottom > vh*-0.1;
+    if(inView){
+      el.classList.add('visible'); el.classList.remove('exit-up','exit-down');
+    } else if(r.bottom <= 0){
+      el.classList.remove('visible','exit-down'); el.classList.add('exit-up');
+    } else if(r.top >= vh){
+      el.classList.remove('visible','exit-up'); el.classList.add('exit-down');
+    }
+  });
+
+  requestAnimationFrame(parallaxLoop);
+}
+
+window.addEventListener('scroll', ()=>{ scrollY_target = window.scrollY; }, {passive:true});
+requestAnimationFrame(parallaxLoop);
+
+
+// (parallax handled by parallaxLoop above)
+
+// ====== MODAL ======
+const plans = {starter:'STARTER PLAN · ₹999/MONTH', elite:'ELITE PLAN · ₹1,999/MONTH', champion:'CHAMPION PLAN · ₹3,499/MONTH', basic:'MEMBERSHIP ENROLLMENT'};
+function openModal(plan){
+  document.getElementById('bookingModal').classList.add('open');
+  document.getElementById('modalForm').style.display='block';
+  document.getElementById('modalSuccess').style.display='none';
+  document.getElementById('modalPlanLabel').textContent = plans[plan]||plans.basic;
+  if(plan!=='basic') document.getElementById('bPlan').value=plan;
+  const today = new Date(); const d=today.toISOString().split('T')[0];
+  document.getElementById('bStart').value=d;
+}
+function closeModal(){ document.getElementById('bookingModal').classList.remove('open'); }
+document.getElementById('bookingModal').addEventListener('click',e=>{if(e.target===document.getElementById('bookingModal'))closeModal();});
+
+function submitBooking(){
+  const name=document.getElementById('bName').value.trim();
+  const phone=document.getElementById('bPhone').value.trim();
+  if(!name||!phone){showToast('⚠️','Missing Info','Please fill in your name and phone.',3000);return;}
+  const plan=document.getElementById('bPlan').value;
+  const dur=parseInt(document.getElementById('bDuration').value);
+  const start=new Date(document.getElementById('bStart').value||new Date());
+  const expiry=new Date(start); expiry.setDate(expiry.getDate()+dur);
+  const members=JSON.parse(localStorage.getItem('yoloMembers')||'[]');
+  members.push({name,phone,plan,start:start.toISOString(),expiry:expiry.toISOString(),id:Date.now()});
+  localStorage.setItem('yoloMembers',JSON.stringify(members));
+  document.getElementById('modalForm').style.display='none';
+  document.getElementById('modalSuccess').style.display='block';
+  showToast('🏆','Membership Confirmed!',`${name} enrolled in ${plan} plan. Reminder set for 3 days before expiry.`,5000);
+  setTimeout(()=>{loadReminderList();},1000);
+}
+
+// ====== REMINDERS ======
+const sampleMembers=[
+  {name:'Priya Sharma',phone:'+91 98765 43210',plan:'Elite',expiry:daysFromNow(2),id:1},
+  {name:'Rahul Kumar',phone:'+91 87654 32109',plan:'Champion',expiry:daysFromNow(3),id:2},
+  {name:'Anjali Mehta',phone:'+91 76543 21098',plan:'Starter',expiry:daysFromNow(7),id:3},
+  {name:'Siddharth V',phone:'+91 65432 10987',plan:'Elite',expiry:daysFromNow(15),id:4},
+  {name:'Deepak Nair',phone:'+91 54321 09876',plan:'Champion',expiry:daysFromNow(30),id:5},
+];
+function daysFromNow(d){const dt=new Date();dt.setDate(dt.getDate()+d);return dt.toISOString();}
+function daysUntil(iso){const diff=new Date(iso)-new Date();return Math.ceil(diff/(1000*60*60*24));}
+
+function loadReminderList(){
+  const stored=JSON.parse(localStorage.getItem('yoloMembers')||'[]');
+  const all=[...sampleMembers,...stored];
+  const list=document.getElementById('reminderList');
+  list.innerHTML='';
+  const sorted=all.sort((a,b)=>daysUntil(a.expiry)-daysUntil(b.expiry));
+  const expiring=sorted.filter(m=>daysUntil(m.expiry)<=3).length;
+  document.getElementById('totalMembers').textContent=all.length;
+  document.getElementById('expiringCount').textContent=expiring;
+  document.getElementById('activeCount').textContent=all.filter(m=>daysUntil(m.expiry)>0).length;
+
+  sorted.slice(0,6).forEach(m=>{
+    const days=daysUntil(m.expiry);
+    const isUrgent=days<=3;
+    const isWarn=days>3&&days<=7;
+    const initials=m.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+    const item=document.createElement('div');
+    item.className='reminder-item';
+    item.innerHTML=`
+      <div class="reminder-avatar ${isUrgent?'urgent':isWarn?'warning':''}">${initials}</div>
+      <div class="reminder-info">
+        <div class="reminder-name">${m.name}</div>
+        <div class="reminder-plan">${m.plan.toUpperCase()} PLAN · ${m.phone}</div>
+        <div class="reminder-actions" style="margin-top:6px">
+          <button class="remind-btn sms" onclick="sendReminder('${m.name}','${m.phone}',${days})">📱 SMS</button>
+          <button class="remind-btn" onclick="callMember('${m.phone}')">📞 CALL</button>
+          <button class="remind-btn" onclick="sendWhatsApp('${m.name}','${m.phone}',${days})">💬 WHATSAPP</button>
+        </div>
+      </div>
+      <div>
+        <div class="reminder-days ${isUrgent?'urgent':isWarn?'warning':''}">${days<0?'EXPIRED':days+'d'}</div>
+        <div class="reminder-days-lbl">${days<0?'OVERDUE':'REMAINING'}</div>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+function sendReminder(name,phone,days){
+  showToast('📱','SMS Sent!',`Reminder sent to ${name} — membership expires in ${days} days.`,4000);
+}
+function callMember(phone){
+  showToast('📞','Calling...','Opening call to '+phone,3000);
+  window.location='tel:'+phone.replace(/\s/g,'');
+}
+function sendWhatsApp(name,phone,days){
+  const msg=encodeURIComponent(`Hi ${name}! 👋 This is a reminder from Yolo Fitness by Suraj. Your membership expires in ${days} day(s). Renew now to continue your fitness journey! Call us: 098480 81347`);
+  window.open('https://wa.me/'+phone.replace(/[^0-9]/g,'')+`?text=${msg}`,'_blank');
+}
+
+function addMember(){
+  const name=document.getElementById('addName').value.trim();
+  const phone=document.getElementById('addPhone').value.trim();
+  const plan=document.getElementById('addPlan').value;
+  const dur=parseInt(document.getElementById('addDuration').value);
+  if(!name||!phone){showToast('⚠️','Error','Please fill in name and phone.',3000);return;}
+  const start=new Date(document.getElementById('addStart').value||new Date());
+  const expiry=new Date(start); expiry.setDate(expiry.getDate()+dur);
+  const members=JSON.parse(localStorage.getItem('yoloMembers')||'[]');
+  members.push({name,phone,plan,start:start.toISOString(),expiry:expiry.toISOString(),id:Date.now()});
+  localStorage.setItem('yoloMembers',JSON.stringify(members));
+  loadReminderList();
+  showToast('✅','Member Added!',`${name} added. Reminder set for 3 days before expiry.`,4000);
+  document.getElementById('addName').value='';
+  document.getElementById('addPhone').value='';
+}
+
+// ====== TOAST ======
+function showToast(icon,title,msg,duration){
+  const container=document.getElementById('toastContainer');
+  const toast=document.createElement('div');
+  toast.className='toast';
+  toast.innerHTML=`<div class="toast-icon">${icon}</div><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div>`;
+  container.appendChild(toast);
+  setTimeout(()=>{toast.style.transition='all .3s ease';toast.style.opacity='0';toast.style.transform='translateX(100%)';setTimeout(()=>toast.remove(),300);},duration);
+}
+
+function scheduleReminderNotifications(){
+  setTimeout(()=>showToast('⏰','Expiry Alert!','Priya Sharma — Elite plan expires in 2 days!',6000),2000);
+  setTimeout(()=>showToast('🔔','Reminder','Rahul Kumar — Champion plan expires in 3 days.',6000),5000);
+}
+
+// ====== MARKDOWN → HTML (safe renderer) ======
+function mdToHtml(text){
+  return text
+    // code blocks
+    .replace(/```[\s\S]*?```/g, m => `<pre style="background:rgba(255,255,255,.05);padding:10px;border-left:2px solid var(--gold);margin:8px 0;font-family:var(--font-mono);font-size:12px;white-space:pre-wrap">${m.replace(/```/g,'')}</pre>`)
+    // bold
+    .replace(/\*\*(.*?)\*\*/g,'<strong style="color:var(--gold)">$1</strong>')
+    // italic
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    // h3
+    .replace(/^### (.+)$/gm,'<div style="font-family:var(--font-display);font-size:18px;letter-spacing:.06em;color:var(--gold);margin:12px 0 4px">$1</div>')
+    // h2
+    .replace(/^## (.+)$/gm,'<div style="font-family:var(--font-display);font-size:22px;letter-spacing:.06em;margin:14px 0 6px;border-bottom:1px solid var(--border);padding-bottom:4px">$1</div>')
+    // h1
+    .replace(/^# (.+)$/gm,'<div style="font-family:var(--font-display);font-size:26px;letter-spacing:.06em;color:var(--white);margin:14px 0 6px">$1</div>')
+    // bullet list items
+    .replace(/^[-•*] (.+)$/gm,'<div style="display:flex;gap:8px;margin:3px 0"><span style="color:var(--gold);flex-shrink:0">▸</span><span>$1</span></div>')
+    // numbered list
+    .replace(/^\d+\. (.+)$/gm,'<div style="display:flex;gap:8px;margin:3px 0"><span style="color:var(--gold);font-family:var(--font-mono);font-size:11px;flex-shrink:0;margin-top:2px">●</span><span>$1</span></div>')
+    // line breaks
+    .replace(/\n{2,}/g,'<br><br>')
+    .replace(/\n/g,'<br>');
+}
+
+// ====== AI TRAINER — full conversation memory, answers EVERYTHING ======
+const trainerHistory = [];
+const TRAINER_SYSTEM = `You are Suraj AI — the world-class AI Fitness Trainer & Nutritionist of Yolo Fitness by Suraj, Hyderabad's top-rated gym (4.9 ⭐, 466 reviews). You are powered by advanced AI and you answer EVERY question with full depth, detail, and expertise — no shortcuts, no brevity unless asked.
+
+## YOUR EXPERTISE:
+Strength training, powerlifting, bodybuilding, cardio, HIIT, yoga, flexibility, sports nutrition, Indian diet planning, weight loss, muscle gain, fat loss, injury prevention, supplement advice, sleep & recovery, hydration, macros, calorie counting, workout periodization, exercise form correction.
+
+## ABSOLUTE RULES — NEVER BREAK THESE:
+1. **Answer ANY question** — fitness, health, diet, exercise, weight loss, muscle gain, mental health related to fitness, supplements, anything. Never refuse or deflect a fitness/health question.
+2. **Exercise tutorials**: Give COMPLETE step-by-step instructions. Include: starting position, breathing pattern, movement execution (each phase), form cues, what to feel, common mistakes with corrections, beginner/advanced modifications, sets & reps recommendations, muscles worked.
+3. **Diet & meal plans**: Create FULL structured plans. For "30-day diet plan to lose 5-7 kg" → give week-by-week breakdown with daily meal schedule (breakfast, pre-workout snack, lunch, post-workout, dinner, bedtime snack), calories per meal, macros, total daily calories, water intake, avoid/include foods, Indian food focus (chapati, dal, sabzi, rice, paneer, curd, etc.).
+4. **Weight loss/gain programs**: Combine diet + workout into a complete program. Include rest days, progressive overload, cardio schedule, cheat meal guidance.
+5. **Formatting**: Always use ## headers for sections, **bold** for key terms, bullet points for steps/lists, numbered lists for sequences. Make responses beautifully structured and easy to follow.
+6. **Indian context**: Always use Indian food names (roti, dal, paneer, sabzi, dosa, idli, sprouts, lassi, chai). Include vegetarian options prominently.
+7. **Tone**: Warm, motivating, expert, like a personal coach who genuinely cares. Use occasional emojis 💪🔥.
+8. **Gym mention**: Naturally refer to Yolo Fitness and Suraj where relevant — e.g. "At Yolo Fitness we recommend..." or "Come try this with our trainers!"
+9. **Sign off** all detailed plans with: *— Suraj AI, Yolo Fitness Hyderabad 💪 Call us: 098480 81347*
+
+You have unlimited response length. Always give the most complete, actionable answer possible.`;
+
+async function sendTrainerMsg(quickMsg){
+  const input=document.getElementById('trainerInput');
+  const msg = quickMsg||input.value.trim();
+  if(!msg) return;
+  input.value='';
+  trainerHistory.push({role:'user', content:msg});
+  appendTrainerMsg(msg,'user');
+  const typingEl=appendTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system: TRAINER_SYSTEM,
+        messages: trainerHistory
+      })
+    });
+    const data=await res.json();
+    typingEl.remove();
+    const reply=data.content?.[0]?.text||"Sorry, I'm having a moment. Please try again!";
+    trainerHistory.push({role:'assistant', content:reply});
+    appendTrainerMsg(reply,'ai',true);
+  } catch(e){
+    typingEl.remove();
+    appendTrainerMsg("Connection error — please try again! 💪",'ai');
+  }
+}
+
+function appendTrainerMsg(text,role,useMarkdown=false){
+  const msgs=document.getElementById('trainerMessages');
+  const div=document.createElement('div');
+  div.className=`chat-msg ${role}`;
+  const content = useMarkdown ? mdToHtml(text) : text.replace(/</g,'&lt;');
+  div.innerHTML=`<div class="chat-sender">${role==='ai'?'SURAJ AI':'YOU'}</div><div class="chat-bubble" style="max-width:100%">${content}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function appendTyping(){
+  const msgs=document.getElementById('trainerMessages');
+  const div=document.createElement('div');
+  div.className='chat-msg ai';
+  div.innerHTML=`<div class="chat-sender">SURAJ AI</div><div class="typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+// ====== CHATBOT — full conversation memory, answers EVERYTHING ======
+const chatbotHistory = [];
+const CHATBOT_SYSTEM = `You are the AI Assistant for Yolo Fitness by Suraj — Hyderabad's top-rated gym (4.9 ⭐, 466 reviews). You are powered by advanced AI.
+
+## GYM INFO:
+- Location: 5th Floor PM House, Chirag Ali Ln, Abids, Hyderabad 500001
+- Phone: 098480 81347
+- Hours: Mon–Sat 5:30 AM – 10:00 PM | Sun 7:00 AM – 12:00 PM
+- Plans: Starter ₹999/mo | Elite ₹1,999/mo | Champion ₹3,499/mo
+
+## YOUR ROLE:
+You answer EVERY question asked — gym info, fitness advice, diet plans, exercise tutorials, weight loss programs, supplement advice, anything health and fitness related. You NEVER refuse or say "I can't answer that" for fitness/health questions.
+
+## RULES:
+1. **ANY fitness question** → Answer with complete detail. Exercise form? Give step-by-step. Diet plan? Give full structured plan. Weight loss? Give combined workout + diet plan.
+2. **Indian context** → Use Indian food names (roti, dal, paneer, sabzi, curd, dosa, etc.) in all meal plans.
+3. **Structure** → Use ## headers, **bold** key terms, bullet lists. Make it beautifully readable.
+4. **Tone** → Friendly, warm, expert. Like texting a personal trainer friend.
+5. **Gym mention** → Naturally suggest visiting Yolo Fitness for training support where relevant.
+6. Keep concise for simple questions (timings, price), detailed for fitness/health questions.`;
+
+function toggleChatbot(){ document.getElementById('chatbotPanel').classList.toggle('open'); }
+
+async function sendChatbotMsg(){
+  const input=document.getElementById('chatbotInput');
+  const msg=input.value.trim(); if(!msg) return;
+  input.value='';
+  chatbotHistory.push({role:'user', content:msg});
+  appendChatMsg(msg,'user');
+  const typingEl=appendChatTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system: CHATBOT_SYSTEM,
+        messages: chatbotHistory
+      })
+    });
+    const data=await res.json();
+    typingEl.remove();
+    const reply=data.content?.[0]?.text||"Please call us at 098480 81347 for more info! 😊";
+    chatbotHistory.push({role:'assistant', content:reply});
+    appendChatMsg(reply,'ai',true);
+  } catch(e){
+    typingEl.remove();
+    appendChatMsg("Connection issue! Call Suraj directly: 098480 81347 💪",'ai');
+  }
+}
+
+function appendChatMsg(text,role,useMarkdown=false){
+  const msgs=document.getElementById('chatbotMessages');
+  const div=document.createElement('div');
+  div.className=`chat-msg ${role}`;
+  const content = useMarkdown ? mdToHtml(text) : text.replace(/</g,'&lt;');
+  div.innerHTML=`<div class="chat-sender">${role==='ai'?'YOLO AI':'YOU'}</div><div class="chat-bubble" style="max-width:100%">${content}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+
+function appendChatTyping(){
+  const msgs=document.getElementById('chatbotMessages');
+  const div=document.createElement('div');
+  div.className='chat-msg ai';
+  div.innerHTML=`<div class="chat-sender">YOLO AI</div><div class="typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return div;
+}
+
+function sendMessage(){
+  const name=document.getElementById('contactName').value.trim();
+  const phone=document.getElementById('contactPhone').value.trim();
+  const msg=document.getElementById('contactMsg').value.trim();
+  if(!name||!phone){showToast('⚠️','Missing Info','Please enter your name and phone.',3000);return;}
+  showToast('✅','Message Received!',`Thanks ${name}! Suraj will contact you at ${phone} shortly.`,5000);
+  document.getElementById('contactName').value='';
+  document.getElementById('contactPhone').value='';
+  document.getElementById('contactMsg').value='';
+}
+
+// ====== INIT ======
+loadReminderList();
+const todayDate=new Date().toISOString().split('T')[0];
+document.getElementById('addStart').value=todayDate;
+</script>
+</body>
+</html>
